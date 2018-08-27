@@ -3,7 +3,6 @@
 
 from __future__ import division
 
-import six
 import unittest
 try:
     import cPickle as pickle
@@ -145,7 +144,7 @@ class TestBase(unittest.TestCase):
     def assertEqual(self, a, b):
         # Make sure string paths are compared with normalized
         # path separators
-        if isinstance(a, six.string_types) and isinstance(b, six.string_types):
+        if isinstance(a, str) and isinstance(b, str):
             if self.RX_PATHSEP.search(a) and self.RX_PATHSEP.search(b): 
                 a = os.path.normpath(a)
                 b = os.path.normpath(b)
@@ -159,7 +158,7 @@ class TestBase(unittest.TestCase):
         return super(TestBase, self).assertEqual(self.toNormpaths(a), self.toNormpaths(b))
     
     def toNormpaths(self, collection):
-        if isinstance(collection, six.string_types):
+        if isinstance(collection, str):
             return os.path.normpath(collection)
         return sorted(map(os.path.normpath, collection))
     
@@ -251,12 +250,12 @@ class TestFileSequence(TestBase):
     def testSetFrameSet(self):
         seq = FileSequence("/cheech/chong.1-5#.exr")
         seq.setFrameSet(FrameSet("10-20"))
-        self.assertEqual(u"/cheech/chong.10-20#.exr", six.text_type(seq))
+        self.assertEqual("/cheech/chong.10-20#.exr", str(seq))
 
     def testSetFrameRange(self):
         seq = FileSequence("/cheech/chong.1-5#.exr")
         seq.setFrameRange("10-20")
-        self.assertEqual(u"/cheech/chong.10-20#.exr", six.text_type(seq))
+        self.assertEqual("/cheech/chong.10-20#.exr", str(seq))
 
     def testFrame(self):
         seq = FileSequence("/foo/bar/bing.#.exr")
@@ -563,10 +562,10 @@ class TestFindSequencesOnDisk(TestBase):
             "seq/foo_1#.exr",
             "seq/foo_0001_extra.exr",
             "seq/1-3#.exr",
-            u"seq/Фото_left.1-3#.exr",
-            u"seq/Фото_right.1-3#.exr",
+            "seq/Фото_left.1-3#.exr",
+            "seq/Фото_right.1-3#.exr",
         }
-        found = set([six.text_type(s) for s in seqs])
+        found = set([str(s) for s in seqs])
         self.assertEqualPaths(found, known)
 
     def testStrictPadding(self):
@@ -584,16 +583,16 @@ class TestFindSequencesOnDisk(TestBase):
             ("seq/foo_##.exr", []),
             ("seq/foo_@.exr", []),
             ("seq/foo_@@_extra.exr", []),
-            (u"seq/Фото_{left,right}.#.exr", [u"seq/Фото_left.1-3#.exr", u"seq/Фото_right.1-3#.exr"]),
-            (u"seq/Фото_{left,right}.@@@@.exr", [u"seq/Фото_left.1-3#.exr", u"seq/Фото_right.1-3#.exr"]),
-            (u"seq/Фото_{left,right}.@@@.exr", []),
+            ("seq/Фото_{left,right}.#.exr", ["seq/Фото_left.1-3#.exr", "seq/Фото_right.1-3#.exr"]),
+            ("seq/Фото_{left,right}.@@@@.exr", ["seq/Фото_left.1-3#.exr", "seq/Фото_right.1-3#.exr"]),
+            ("seq/Фото_{left,right}.@@@.exr", []),
         ]
 
         for pattern, expected in tests:
             seqs = findSequencesOnDisk(pattern, strictPadding=True)
             for seq in seqs:
                 self.assertTrue(isinstance(seq, FileSequence))
-            actual = self.toNormpaths([six.text_type(seq) for seq in seqs])
+            actual = self.toNormpaths([str(seq) for seq in seqs])
             expected = self.toNormpaths(expected)
             self.assertEqual(actual, expected)
 
@@ -603,22 +602,22 @@ class TestFindSequencesOnDisk(TestBase):
 
     def testFindSequenceOnDiskNegative(self):
         seqs = findSequencesOnDisk("seqneg")
-        self.assertEqual(u"seqneg/Фото.-1-1#.exr", six.text_type(seqs[0]))
-        self.assertEqual(u"seqneg/Фото.-001.exr", seqs[0].frame(-1))
-        self.assertEqual(u"seqneg/Фото.-1001.exr", seqs[0].frame(-1001))
-        self.assertEqual(u"seqneg/Фото.-10011.exr", seqs[0].frame(-10011))
-        self.assertEqual(u"seqneg/Фото.1000.exr", seqs[0].frame(1000))
+        self.assertEqual("seqneg/Фото.-1-1#.exr", str(seqs[0]))
+        self.assertEqual("seqneg/Фото.-001.exr", seqs[0].frame(-1))
+        self.assertEqual("seqneg/Фото.-1001.exr", seqs[0].frame(-1001))
+        self.assertEqual("seqneg/Фото.-10011.exr", seqs[0].frame(-10011))
+        self.assertEqual("seqneg/Фото.1000.exr", seqs[0].frame(1000))
 
     def testFindSequencesOnDiskSkipHiddenFiles(self):
         seqs = findSequencesOnDisk("seqhidden")
         self.assertEqual(3, len(seqs))
 
         known = set(self.toNormpaths([
-            u"seqhidden/Фото1000-1002,1004-1006#.exr",
+            "seqhidden/Фото1000-1002,1004-1006#.exr",
             "seqhidden/foo.1-5#.exr",
             "seqhidden/foo.1-5#.jpg",
         ]))
-        found = set(self.toNormpaths([six.text_type(s) for s in seqs]))
+        found = set(self.toNormpaths([str(s) for s in seqs]))
         self.assertEqual(known, found)
         self.assertFalse(known.difference(found))
 
@@ -627,15 +626,15 @@ class TestFindSequencesOnDisk(TestBase):
         self.assertEqual(7, len(seqs))
 
         known = {
-            u"seqhidden/Фото1000-1002,1004-1006#.exr",
-            u"seqhidden/.Фото1000-1002,1004-1006#.exr",
+            "seqhidden/Фото1000-1002,1004-1006#.exr",
+            "seqhidden/.Фото1000-1002,1004-1006#.exr",
             "seqhidden/foo.1-5#.exr",
             "seqhidden/.foo.1-5#.exr",
             "seqhidden/foo.1-5#.jpg",
             "seqhidden/.foo.1-5#.jpg",
             "seqhidden/.hidden",
         }
-        found = set([six.text_type(s) for s in seqs])
+        found = set([str(s) for s in seqs])
         self.assertEqualPaths(known, found)
 
     def testCrossPlatformPathSep(self):

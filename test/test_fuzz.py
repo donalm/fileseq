@@ -9,7 +9,6 @@ except ImportError:
     import pickle
 
 import re
-import six
 import types
 from itertools import chain
 
@@ -219,9 +218,9 @@ class TestFrameSet(unittest.TestCase):
         f = FrameSet(test)
         m = u'FrameSet("{0}")._frange != {0}: got {1}'
         r = f._frange
-        self.assertEqual(r, six.text_type(test), m.format(test, r))
+        self.assertEqual(r, str(test), m.format(test, r))
         m = u'FrameSet("{0}")._frange returns {1}: got {2}'
-        self.assertIsInstance(r, six.text_type, m.format(test, six.text_type, type(r)))
+        self.assertIsInstance(r, str, m.format(test, str, type(r)))
 
     def _check___init___items(self, test, expect):
         """
@@ -472,12 +471,12 @@ class TestFrameSet(unittest.TestCase):
         f2 = pickle.loads(pickle.dumps(f))
         m = u'FrameSet("{0}") does not pickle correctly'
         self.assertIsInstance(f2, FrameSet, m.format(test))
-        self.assertTrue(six.text_type(f) == six.text_type(f2) and list(f) == list(f2), m.format(test))
+        self.assertTrue(str(f) == str(f2) and list(f) == list(f2), m.format(test))
         # test old objects being unpickled through new lib
         state = {'__frange': f._frange, '__set': set(f._items), '__list': list(f._order)}
         f2 = FrameSet.__new__(FrameSet)
         f2.__setstate__(state)
-        self.assertTrue(six.text_type(f) == six.text_type(f2) and list(f) == list(f2), m.format(test))
+        self.assertTrue(str(f) == str(f2) and list(f) == list(f2), m.format(test))
 
     def _check_frameRange(self, test, expect):
         """
@@ -493,15 +492,15 @@ class TestFrameSet(unittest.TestCase):
             return
         m = u'FrameSet("{0}").frameRange({1}) != "{2}": got "{3}"'
         p = '((?<![xy:])\d+)'
-        l = max([max([len(i) for i in re.findall(p, six.text_type(f))]) + 1, 4])
-        expect = re.sub(p, lambda m: m.group(0).rjust(l, '0'), six.text_type(f))
+        l = max([max([len(i) for i in re.findall(p, str(f))]) + 1, 4])
+        expect = re.sub(p, lambda m: m.group(0).rjust(l, '0'), str(f))
         try:
             r = f.frameRange(l)
         except Exception as err:
             r = repr(err)
         self.assertEqual(r, expect, m.format(test, l, expect, r))
         m = u'FrameSet("{0}").frameRange({1}) returns {2}: got {3}'
-        self.assertIsInstance(r, six.text_type, m.format(test, l, six.text_type, type(r)))
+        self.assertIsInstance(r, str, m.format(test, l, str, type(r)))
 
     def _check_invertedFrameRange(self, test, expect):
         """
@@ -523,7 +522,7 @@ class TestFrameSet(unittest.TestCase):
             e = [i for i in xrange(t[0], t[-1]) if i not in t]
             self.assertEqual(c, e, m.format(test, e, c))
         m = u'FrameSet("{0}").invertedFrameRange() returns {1}: got {2}'
-        self.assertIsInstance(r, six.text_type, m.format(test, six.text_type, type(r)))
+        self.assertIsInstance(r, str, m.format(test, str, type(r)))
 
     def _check_normalize(self, test, expect):
         """

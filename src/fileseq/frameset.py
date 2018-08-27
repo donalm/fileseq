@@ -3,7 +3,6 @@
 frameset - A set-like object representing a frame range for fileseq.
 """
 
-import six
 import numbers
 
 from collections import Set, Sequence
@@ -87,8 +86,9 @@ class FrameSet(Set):
 
     def __init__(self, frange):        
         # if the user provides anything but a string, short-circuit the build
-        if not isinstance(frange, six.text_type):
-            if isinstance(frange, six.binary_type):
+        if not isinstance(frange, str):
+            if isinstance(frange, bytes):
+                # We can only reach this code in Python3
                 frange = frange.decode("utf-8")
             # if it's apparently a FrameSet already, short-circuit the build
             elif set(dir(frange)).issuperset(self.__slots__):
@@ -124,7 +124,7 @@ class FrameSet(Set):
         # we're willing to trim padding characters from consideration
         self._frange = asString(frange)
         for key in PAD_MAP:
-            self._frange = self._frange.replace(key, u'')
+            self._frange = self._frange.replace(key, '')
 
         # because we're acting like a set, we need to support the empty set
         if not self._frange:
@@ -362,7 +362,7 @@ class FrameSet(Set):
                 result += r
         
         if not result:
-            return u''
+            return ''
         
         return FrameSet.framesToFrameRange(
             result, zfill=zfill, sort=False, compress=False)
@@ -400,7 +400,7 @@ class FrameSet(Set):
             # this is to allow unpickling of "3rd generation" FrameSets,
             # which are immutable and may be empty.
             self.__init__(state[0])
-        elif isinstance(state, six.string_types):
+        elif isinstance(state, (str, bytes)):
             # this is to allow unpickling of "2nd generation" FrameSets,
             # which were mutable and could not be empty.
             self.__init__(state)
@@ -851,7 +851,7 @@ class FrameSet(Set):
         # we're willing to trim padding characters from consideration
         frange = asString(frange)
         for key in PAD_MAP:
-            frange = frange.replace(key, u'')
+            frange = frange.replace(key, '')
         if not frange:
             return True
         for part in frange.split(','):
@@ -930,15 +930,15 @@ class FrameSet(Set):
         :rtype: str
         """
         if stop is None:
-            return u''
+            return ''
         pad_start = pad(start, zfill)
         pad_stop = pad(stop, zfill)
         if stride is None or start == stop:
-            return u'{0}'.format(pad_start)
+            return '{0}'.format(pad_start)
         elif abs(stride) == 1:
-            return u'{0}-{1}'.format(pad_start, pad_stop)
+            return '{0}-{1}'.format(pad_start, pad_stop)
         else:
-            return u'{0}-{1}x{2}'.format(pad_start, pad_stop, stride)
+            return '{0}-{1}x{2}'.format(pad_start, pad_stop, stride)
 
     @staticmethod
     def framesToFrameRanges(frames, zfill=0):
@@ -1007,9 +1007,9 @@ class FrameSet(Set):
             frames = unique(set(), frames)
         frames = list(frames)
         if not frames:
-            return u''
+            return ''
         if len(frames) == 1:
             return pad(frames[0], zfill)
         if sort:
             frames.sort()
-        return u','.join(FrameSet.framesToFrameRanges(frames, zfill))
+        return ','.join(FrameSet.framesToFrameRanges(frames, zfill))

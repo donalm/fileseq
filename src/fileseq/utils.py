@@ -113,7 +113,7 @@ def pad(number, width=0):
     :param width: width for zero padding
     :rtype: str
     """
-    return six.text_type(number).zfill(width)
+    return str(number).zfill(width)
 
 def _getPathSep(path):
     """
@@ -130,6 +130,8 @@ def _getPathSep(path):
     """
     return os.sep
 
+_STR_TYPES = frozenset((six.text_type, str))
+
 def asString(obj):
     """
     Ensure an object is either explicitly str or unicode
@@ -141,8 +143,13 @@ def asString(obj):
     :type obj: Object to return as str or unicode
     :rtype: str or unicode
     """
-    if isinstance(obj, six.text_type):
-        return obj
-    elif isinstance(obj, six.binary_type):
-        return obj.decode("utf-8")
-    return six.text_type(obj)
+    if six.PY2:
+        if type(obj) in _STR_TYPES:
+            return obj
+        return str(obj)
+    else:
+        if type(obj) is str:
+            return obj
+        elif isinstance(obj, bytes):
+            return obj.decode("utf-8")
+        return str(obj)
