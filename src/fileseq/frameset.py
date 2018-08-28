@@ -92,7 +92,7 @@ class FrameSet(Set):
                 # We can only reach this code in Python3
                 frange = frange.decode("utf-8")
             elif isinstance(frange, six.text_type):
-                pass
+                frange = frange.encode("utf-8")
             # if it's apparently a FrameSet already, short-circuit the build
             elif set(dir(frange)).issuperset(self.__slots__):
                 for attr in self.__slots__:
